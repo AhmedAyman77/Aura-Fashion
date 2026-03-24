@@ -24,6 +24,7 @@ export const errorHandler = (
         details = err.details;
     }
     else {
+        console.error('REAL ERROR:', err);
         err = new InternalServerError('An unexpected error occurred', { "originalError": err.message });
         message = err.message;
         details = err.stack ? { stack: err.stack } : undefined;

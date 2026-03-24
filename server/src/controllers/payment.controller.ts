@@ -2,11 +2,14 @@ import { Request, Response } from 'express';
 import { getStripe } from '../config/stripe';
 import { DAOFactory } from '../databases/DAOFactory';
 import { AuthorizationError, ValidationError } from '../types/error.types';
+import { redisClient } from '../config/redis';
 
 const couponDAO = DAOFactory.getInstance().getCouponDAO();
 const orderDAO = DAOFactory.getInstance().getOrderDAO();
+const userDAO = DAOFactory.getInstance().getUserDAO();
 
 export async function createCheckoutSession(req: Request, res: Response) {
+  console.log("Creating checkout session for user:", req.user?._id);
   if (!req.user?._id) {
     throw new AuthorizationError('User not authenticated');
   }
@@ -16,13 +19,13 @@ export async function createCheckoutSession(req: Request, res: Response) {
   if (!Array.isArray(products) || products.length === 0) {
     throw new ValidationError('No products provided for checkout');
   }
-
+  
   let totalAmount = 0;
-
+  
   const lineItems = products.map((product: any) => {
     const amount = Math.round(product.price * 100);
     totalAmount += amount * product.quantity;
-
+    
     return {
       price_data: {
         currency: 'usd',
@@ -35,7 +38,7 @@ export async function createCheckoutSession(req: Request, res: Response) {
       quantity: product.quantity || 1,
     };
   });
-
+  
   let coupon = null;
   if (couponCode) {
     coupon = await couponDAO.findByCode(couponCode);
@@ -43,7 +46,7 @@ export async function createCheckoutSession(req: Request, res: Response) {
       totalAmount -= Math.round((totalAmount * coupon.discountPercentage) / 100);
     }
   }
-
+  
   const session = await getStripe().checkout.sessions.create({
     payment_method_types: ['card'],
     line_items: lineItems,
@@ -51,8 +54,8 @@ export async function createCheckoutSession(req: Request, res: Response) {
     success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
     discounts: coupon
-      ? [{ coupon: await createStripeCoupon(coupon.discountPercentage) }]
-      : [],
+    ? [{ coupon: await createStripeCoupon(coupon.discountPercentage) }]
+    : [],
     metadata: {
       userId: req.user._id,
       couponCode: couponCode || '',
@@ -65,7 +68,7 @@ export async function createCheckoutSession(req: Request, res: Response) {
       ),
     },
   });
-
+  
   res.status(200).json({ id: session.id, url: session.url, totalAmount: totalAmount / 100 });
 }
 
@@ -76,6 +79,31 @@ export async function checkoutSuccess(req: Request, res: Response) {
     throw new ValidationError('Session ID is required');
   }
 
+  // Redis lock
+  const lockKey = `lock:checkout:${sessionId}`;
+  const lock = await redisClient.set(lockKey, '1', {
+    NX: true, // will return null if key already exists
+    EX: 30
+  });
+
+  if (!lock) {
+    // Another request is processing — wait then return the created order
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+
+  // Duplicate check (handles reloads)
+  const existingOrder = await orderDAO.findByStripeSessionId(sessionId);
+  if (existingOrder) {
+    console.log('Order already exists for session ID:', sessionId);
+    return res.status(200).json({
+      success: true,
+      message: 'Order already processed.',
+      orderId: existingOrder._id,
+    });
+  }
+
+  console.log("new order, retrieving session from Stripe...");
+
   const session = await getStripe().checkout.sessions.retrieve(sessionId);
   
   if (session.payment_status !== 'paid') {
@@ -84,6 +112,7 @@ export async function checkoutSuccess(req: Request, res: Response) {
       message: 'Payment not completed yet',
     });
   }
+
   if (session.metadata?.couponCode) {
     const coupon = await couponDAO.findByCode(session.metadata.couponCode);
     if (coupon) {
@@ -102,10 +131,13 @@ export async function checkoutSuccess(req: Request, res: Response) {
     totalAmount: (session.amount_total || 0) / 100,
     stripeSessionId: sessionId,
   });
-  
+
   if (session.amount_total! / 100 >= 20000) {
     await createNewCoupon(session.metadata?.userId!);
   }
+
+  // remove cart items from user
+  await userDAO.clearCart(session.metadata?.userId!);
 
   res.status(200).json({
     success: true,

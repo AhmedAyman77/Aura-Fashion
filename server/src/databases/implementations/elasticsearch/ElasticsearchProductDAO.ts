@@ -48,8 +48,11 @@ export class ElasticsearchProductDAO {
                 bool: { must, filter },
             },
         });
-
-        return result.hits.hits.map((hit: any) => hit._source as Product);
+        
+        return result.hits.hits.map((hit: any) => ({
+            ...hit._source as Product,
+            _id: hit._id,
+        }));
     }
 
     // Sync entire DB into Elasticsearch (run once on startup)

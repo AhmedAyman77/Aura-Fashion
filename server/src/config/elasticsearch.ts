@@ -1,11 +1,16 @@
 import { Client } from '@elastic/elasticsearch';
 import { env } from './env.config';
 
+// export const esClient = new Client({
+//     node: env.ELASTICSEARCH_URL,
+//     ...(env.ELASTICSEARCH_API_KEY && {
+//         auth: { apiKey: env.ELASTICSEARCH_API_KEY },
+//     }),
+// });
+
+
 export const esClient = new Client({
-    node: env.ELASTICSEARCH_URL,
-    ...(env.ELASTICSEARCH_API_KEY && {
-        auth: { apiKey: env.ELASTICSEARCH_API_KEY },
-    }),
+    node: env.ELASTICSEARCH_URL
 });
 
 export async function initElasticsearch(): Promise<void> {

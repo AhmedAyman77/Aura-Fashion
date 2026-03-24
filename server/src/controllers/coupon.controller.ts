@@ -20,7 +20,6 @@ export async function validateCoupon(req: Request, res: Response) {
 
   const { code } = req.body;
   const coupon = await couponDAO.findByCode(code);
-  console.log(`Validating coupon code: ${code} for user: ${req.user._id} -> ${coupon}`);
 
   if (!coupon || coupon.userId !== req.user._id || !coupon.isActive) {
     throw new NotFoundError('Coupon not found');
