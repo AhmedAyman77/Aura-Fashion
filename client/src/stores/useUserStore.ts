@@ -17,6 +17,13 @@ interface SignupData {
 	confirmPassword: string;
 }
 
+// Shape of a 422 validation error from zod-express-middleware
+interface ValidationErrorResponse {
+	success: false;
+	message: string;
+	errors: { field?: string; message: string }[];
+}
+
 interface UserStore {
 	user: User | null;
 	loading: boolean;
@@ -26,6 +33,25 @@ interface UserStore {
 	logout: () => Promise<void>;
 	checkAuth: () => Promise<void>;
 	refreshToken: () => Promise<void>;
+}
+
+// Extracts a readable message from any API error.
+// Handles both the new 422 zod format and the existing { message } format.
+function getErrorMessage(error: unknown, fallback: string): string {
+	const err = error as AxiosError<ValidationErrorResponse & { message: string }>;
+	const data = err.response?.data;
+
+	// 422 from zod — show the first field error
+	if (err.response?.status === 422 && data?.errors?.length) {
+		return data.errors[0].message;
+	}
+
+	// 429 rate limit
+	if (err.response?.status === 429) {
+		return 'Too many attempts. Please try again later.';
+	}
+
+	return data?.message || fallback;
 }
 
 export const useUserStore = create<UserStore>((set, get) => ({
@@ -47,21 +73,18 @@ export const useUserStore = create<UserStore>((set, get) => ({
 			set({ user: res.data, loading: false });
 		} catch (error) {
 			set({ loading: false });
-			const err = error as AxiosError<{ message: string }>;
-			toast.error(err.response?.data?.message || "An error occurred");
+			toast.error(getErrorMessage(error, "Signup failed. Please try again."));
 		}
 	},
 
 	login: async (email, password) => {
 		set({ loading: true });
-
 		try {
 			const res = await axiosInstance.post<User>("/auth/login", { email, password });
 			set({ user: res.data, loading: false });
 		} catch (error) {
 			set({ loading: false });
-			const err = error as AxiosError<{ message: string }>;
-			toast.error(err.response?.data?.message || "An error occurred");
+			toast.error(getErrorMessage(error, "Login failed. Please try again."));
 		}
 	},
 
@@ -70,8 +93,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
 			await axiosInstance.post("/auth/logout");
 			set({ user: null });
 		} catch (error) {
-			const err = error as AxiosError<{ message: string }>;
-			toast.error(err.response?.data?.message || "An error occurred during logout");
+			toast.error(getErrorMessage(error, "An error occurred during logout."));
 		}
 	},
 
@@ -107,33 +129,25 @@ axiosInstance.interceptors.response.use(
 	async (error: AxiosError) => {
 		const originalRequest = error.config as typeof error.config & { _retry?: boolean };
 
-		// Skip refresh for login, signup, and refresh-token routes only.
-		// /auth/profile is intentionally excluded so an expired token
-		// on app load triggers a refresh instead of logging the user out.
 		const skipRefreshRoutes = ["/auth/login", "/auth/signup", "/auth/refresh-token"];
 		const isSkippedRoute = skipRefreshRoutes.some(route => originalRequest?.url?.includes(route));
-		if (isSkippedRoute) {
-			return Promise.reject(error);
-		}
+		if (isSkippedRoute) return Promise.reject(error);
 
 		if (error.response?.status === 401 && !originalRequest._retry) {
 			originalRequest._retry = true;
 
 			try {
-				// If a refresh is already in progress, wait for it to complete
 				if (refreshPromise) {
 					await refreshPromise;
 					return axiosInstance(originalRequest!);
 				}
 
-				// Start a new refresh process
 				refreshPromise = useUserStore.getState().refreshToken();
 				await refreshPromise;
 				refreshPromise = null;
 
 				return axiosInstance(originalRequest!);
 			} catch (refreshError) {
-				// If refresh fails, logout and reject
 				useUserStore.getState().logout();
 				refreshPromise = null;
 				return Promise.reject(refreshError);

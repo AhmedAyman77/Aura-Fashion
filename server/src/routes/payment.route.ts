@@ -6,7 +6,7 @@ import { rateLimit, rules } from '../middlewares/security.middleware';
 
 const router = Router();
 
-router.post('/checkout', requireAuth, rateLimit.checkout, rules.checkout,        asyncHandler(createCheckoutSession));
-router.post('/success',               rateLimit.checkout, rules.checkoutSuccess, asyncHandler(checkoutSuccess));
+router.post('/checkout', requireAuth, rateLimit.checkout, rules.checkout,asyncHandler(createCheckoutSession));
+router.post('/success', rateLimit.checkout, rules.checkoutSuccess, asyncHandler(checkoutSuccess));
 
 export default router;
