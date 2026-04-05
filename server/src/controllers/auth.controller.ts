@@ -24,7 +24,7 @@ export const storeRefreshToken = async (userId: string, refreshToken: string) =>
 };
 
 export const setCookies = (res: Response, accessToken: string, refreshToken: string) => {
-  const opts = { httpOnly: true, secure: env.NODE_ENV === 'production', sameSite: 'strict' as const };
+  const opts = { httpOnly: true, secure: env.NODE_ENV === 'production', sameSite: 'none' as const };
   res.cookie('accessToken',  accessToken,  { ...opts, maxAge: 15 * 60 * 1000 });
   res.cookie('refreshToken', refreshToken, { ...opts, maxAge: 7 * 24 * 60 * 60 * 1000 });
 };
