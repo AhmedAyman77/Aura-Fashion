@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Bot, Info, Loader, Send, Trash2, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-const RAG_URL = 'http://localhost:6000/api/v1/nlp/index/answer/1';
+const RAG_URL = 'http://127.0.0.1:8000/api/v1/nlp/index/answer/1';
 
 interface Message {
 	id: string;
