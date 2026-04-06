@@ -24,21 +24,22 @@ export const securityHeaders = helmet({
 
 // rate limiting with Arcjet
 function makeArcjetLimiter(max: number, windowSeconds: number) {
+  const mode = env.NODE_ENV === 'production' ? 'LIVE' : 'DRY_RUN';
   return arcjet({
     key: process.env.ARCJET_KEY!,
     rules: [
-      fixedWindow({ mode: 'LIVE', max, window: `${windowSeconds}s` }),
-      shield({ mode: 'LIVE' }),
+      fixedWindow({ mode, max, window: `${windowSeconds}s` }),
+      shield({ mode }),
     ],
   });
 }
 
 const limiters = {
-  login: makeArcjetLimiter(10, 60),
-  signup: makeArcjetLimiter(5, 60),
-  checkout: makeArcjetLimiter(20, 60),
-  search: makeArcjetLimiter(60, 60),
-  global: makeArcjetLimiter(200, 60),
+  login: makeArcjetLimiter(10, 30),
+  signup: makeArcjetLimiter(5, 30),
+  checkout: makeArcjetLimiter(20, 30),
+  search: makeArcjetLimiter(60, 30),
+  global: makeArcjetLimiter(200, 30),
 };
 
 function makeMiddleware(limiter: ReturnType<typeof arcjet>) {

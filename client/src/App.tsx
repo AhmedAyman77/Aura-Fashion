@@ -10,6 +10,7 @@ import CategoryPage from './pages/CategoryPage';
 import CartPage from './pages/CartPage';
 import PurchaseSuccessPage from './pages/PurchaseSuccessPage';
 import PurchaseCancelPage from './pages/PurchaseCancelPage';
+import AIChatPage from './pages/AIChatPage';
 
 import Navbar from './components/Navbar';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -57,10 +58,10 @@ function App() {
             path='/purchase-success'
             element={user ? <PurchaseSuccessPage /> : <Navigate to='/login' />}
           />
-          <Route
-            path='/purchase-cancel'
+          <Route path='/purchase-cancel'
             element={user ? <PurchaseCancelPage /> : <Navigate to='/login' />}
           />
+          <Route path='/ai-chat' element={<AIChatPage />} />
         </Routes>
       </div>
       <Toaster />

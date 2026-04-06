@@ -1,4 +1,4 @@
-import { ShoppingCart, UserPlus, LogIn, LogOut, Lock } from 'lucide-react';
+import { ShoppingCart, UserPlus, LogIn, LogOut, Lock, Bot } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useUserStore } from '../stores/useUserStore';
 import { useCartStore } from '../stores/useCartStore';
@@ -22,6 +22,14 @@ const Navbar = () => {
 							className='text-gray-300 hover:text-emerald-400 transition duration-300 ease-in-out'
 						>
 							Home
+						</Link>
+
+						<Link
+							to='/ai-chat'
+							className='flex items-center gap-1.5 text-gray-300 hover:text-emerald-400 transition duration-300 ease-in-out'
+						>
+							<Bot size={18} className='inline-block' />
+							<span className='hidden sm:inline'>AI Assistant</span>
 						</Link>
 
 						{user && (
