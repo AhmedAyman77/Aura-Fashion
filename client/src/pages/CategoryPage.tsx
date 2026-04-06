@@ -19,11 +19,9 @@ const CategoryPage = () => {
 
 	useEffect(() => {
 		if (category) {
-			setActiveCategory(category);       // tell the store we're in this category
-			fetchProductsByCategory(category); // load this category's products
+			setActiveCategory(category);
+			fetchProductsByCategory(category);
 		}
-
-		// On unmount: clear category context and search
 		return () => {
 			setActiveCategory(null);
 			setSearchQuery('');
@@ -34,7 +32,19 @@ const CategoryPage = () => {
 		<div className='min-h-screen'>
 			<div className='relative z-10 max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-16'>
 				<motion.h1
-					className='text-center text-4xl sm:text-5xl font-bold text-emerald-400 mb-6'
+					style={{
+						textAlign: 'center',
+						fontFamily: 'Cormorant Garamond, serif',
+						fontSize: 'clamp(2.5rem, 6vw, 4rem)',
+						fontWeight: 600,
+						letterSpacing: '0.12em',
+						background: 'linear-gradient(90deg, #c9a84c, #e8c97a, #c9a84c)',
+						backgroundSize: '200% auto',
+						WebkitBackgroundClip: 'text',
+						WebkitTextFillColor: 'transparent',
+						backgroundClip: 'text',
+						marginBottom: 32,
+					}}
 					initial={{ opacity: 0, y: -20 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.8 }}
@@ -44,7 +54,7 @@ const CategoryPage = () => {
 
 				{/* Search bar */}
 				<motion.div
-					className='mb-8'
+					style={{ marginBottom: 36 }}
 					initial={{ opacity: 0, y: -10 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.5, delay: 0.2 }}
@@ -55,7 +65,14 @@ const CategoryPage = () => {
 						placeholder={`Search in ${category ?? 'category'}...`}
 					/>
 					{searchQuery && (
-						<p className='text-center text-gray-400 mt-3 text-sm'>
+						<p style={{
+							textAlign: 'center',
+							color: 'rgba(245,245,240,0.35)',
+							marginTop: 10,
+							fontFamily: 'DM Sans, sans-serif',
+							fontSize: '0.78rem',
+							letterSpacing: '0.06em',
+						}}>
 							{products.length === 0
 								? 'No products found'
 								: `${products.length} result${products.length !== 1 ? 's' : ''} for "${searchQuery}"`}
@@ -70,10 +87,16 @@ const CategoryPage = () => {
 					transition={{ duration: 0.8, delay: 0.3 }}
 				>
 					{!loading && products.length === 0 && (
-						<h2 className='text-3xl font-semibold text-gray-300 text-center col-span-full'>
-							{searchQuery
-								? `No products match "${searchQuery}"`
-								: 'No products found'}
+						<h2 style={{
+							fontFamily: 'Cormorant Garamond, serif',
+							fontSize: '1.8rem',
+							fontWeight: 400,
+							color: 'rgba(245,245,240,0.3)',
+							textAlign: 'center',
+							gridColumn: '1 / -1',
+							letterSpacing: '0.06em',
+						}}>
+							{searchQuery ? `No products match "${searchQuery}"` : 'No products found'}
 						</h2>
 					)}
 

@@ -29,18 +29,14 @@ const OrderSummary = () => {
 				products: cart,
 				couponCode: coupon ? coupon.code : null,
 			});
-
 			if (!res.data.url) {
 				toast.error('Failed to get checkout URL from Stripe.');
 				return;
 			}
-
-			// Modern approach: redirect directly to Stripe's hosted checkout page
 			window.location.href = res.data.url;
 		} catch (error: any) {
 			const message = error?.response?.data?.message || error?.message || 'Checkout failed. Please try again.';
 			toast.error(message);
-			console.error('Checkout error:', error);
 		} finally {
 			setIsLoading(false);
 		}
@@ -48,60 +44,104 @@ const OrderSummary = () => {
 
 	return (
 		<motion.div
-			className='space-y-4 rounded-lg border border-gray-700 bg-gray-800 p-4 shadow-sm sm:p-6'
+			style={{
+				borderRadius: 2,
+				border: '1px solid rgba(201,168,76,0.18)',
+				background: 'rgba(245,245,240,0.02)',
+				padding: '24px',
+				backdropFilter: 'blur(4px)',
+			}}
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.5 }}
 		>
-			<p className='text-xl font-semibold text-emerald-400'>Order summary</p>
+			{/* Title */}
+			<div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
+				<div style={{ height: 1, width: 20, background: 'rgba(201,168,76,0.4)' }} />
+				<p style={{
+					fontFamily: 'Cormorant Garamond, serif',
+					fontSize: '1.25rem',
+					fontWeight: 600,
+					letterSpacing: '0.08em',
+					color: '#c9a84c',
+					textTransform: 'uppercase',
+					margin: 0,
+				}}>
+					Order Summary
+				</p>
+				<div style={{ height: 1, flex: 1, background: 'linear-gradient(90deg, rgba(201,168,76,0.4), transparent)' }} />
+			</div>
 
-			<div className='space-y-4'>
-				<div className='space-y-2'>
-					<dl className='flex items-center justify-between gap-4'>
-						<dt className='text-base font-normal text-gray-300'>Original price</dt>
-						<dd className='text-base font-medium text-white'>${formattedSubtotal}</dd>
-					</dl>
-
-					{savings > 0 && (
-						<dl className='flex items-center justify-between gap-4'>
-							<dt className='text-base font-normal text-gray-300'>Savings</dt>
-							<dd className='text-base font-medium text-emerald-400'>-${formattedSavings}</dd>
-						</dl>
-					)}
-
-					{coupon && isCouponApplied && (
-						<dl className='flex items-center justify-between gap-4'>
-							<dt className='text-base font-normal text-gray-300'>Coupon ({coupon.code})</dt>
-							<dd className='text-base font-medium text-emerald-400'>-{coupon.discountPercentage}%</dd>
-						</dl>
-					)}
-
-					<dl className='flex items-center justify-between gap-4 border-t border-gray-600 pt-2'>
-						<dt className='text-base font-bold text-white'>Total</dt>
-						<dd className='text-base font-bold text-emerald-400'>${formattedTotal}</dd>
-					</dl>
+			<div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+				<div style={{ display: 'flex', justifyContent: 'space-between' }}>
+					<span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.82rem', color: 'rgba(245,245,240,0.45)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Original price</span>
+					<span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', color: 'rgba(245,245,240,0.75)' }}>${formattedSubtotal}</span>
 				</div>
 
-				<motion.button
-					className='flex w-full items-center justify-center rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300 disabled:opacity-60 disabled:cursor-not-allowed'
-					whileHover={{ scale: isLoading ? 1 : 1.05 }}
-					whileTap={{ scale: isLoading ? 1 : 0.95 }}
-					onClick={handlePayment}
-					disabled={isLoading}
+				{savings > 0 && (
+					<div style={{ display: 'flex', justifyContent: 'space-between' }}>
+						<span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.82rem', color: 'rgba(245,245,240,0.45)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Savings</span>
+						<span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', color: '#c9a84c' }}>-${formattedSavings}</span>
+					</div>
+				)}
+
+				{coupon && isCouponApplied && (
+					<div style={{ display: 'flex', justifyContent: 'space-between' }}>
+						<span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.82rem', color: 'rgba(245,245,240,0.45)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Coupon ({coupon.code})</span>
+						<span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', color: '#c9a84c' }}>-{coupon.discountPercentage}%</span>
+					</div>
+				)}
+
+				<div style={{ borderTop: '1px solid rgba(201,168,76,0.12)', paddingTop: 12, display: 'flex', justifyContent: 'space-between' }}>
+					<span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1rem', fontWeight: 600, color: 'rgba(245,245,240,0.9)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Total</span>
+					<span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem', fontWeight: 700, color: '#c9a84c', letterSpacing: '0.04em' }}>${formattedTotal}</span>
+				</div>
+			</div>
+
+			<motion.button
+				style={{
+					width: '100%',
+					padding: '12px 20px',
+					background: 'rgba(201,168,76,0.12)',
+					border: '1px solid rgba(201,168,76,0.4)',
+					borderRadius: 2,
+					color: '#c9a84c',
+					fontFamily: 'DM Sans, sans-serif',
+					fontSize: '0.72rem',
+					fontWeight: 600,
+					letterSpacing: '0.2em',
+					textTransform: 'uppercase',
+					cursor: isLoading ? 'not-allowed' : 'pointer',
+					opacity: isLoading ? 0.6 : 1,
+					transition: 'all 0.3s',
+					marginBottom: 16,
+				}}
+				whileHover={{ background: 'rgba(201,168,76,0.2)' }}
+				whileTap={{ scale: isLoading ? 1 : 0.98 }}
+				onClick={handlePayment}
+				disabled={isLoading}
+			>
+				{isLoading ? 'Redirecting...' : 'Proceed to Checkout'}
+			</motion.button>
+
+			<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+				<span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'rgba(245,245,240,0.3)' }}>or</span>
+				<Link
+					to='/'
+					style={{
+						display: 'inline-flex',
+						alignItems: 'center',
+						gap: 6,
+						fontFamily: 'DM Sans, sans-serif',
+						fontSize: '0.75rem',
+						letterSpacing: '0.1em',
+						color: 'rgba(201,168,76,0.6)',
+						textDecoration: 'none',
+					}}
 				>
-					{isLoading ? 'Redirecting to Stripe...' : 'Proceed to Checkout'}
-				</motion.button>
-
-				<div className='flex items-center justify-center gap-2'>
-					<span className='text-sm font-normal text-gray-400'>or</span>
-					<Link
-						to='/'
-						className='inline-flex items-center gap-2 text-sm font-medium text-emerald-400 underline hover:text-emerald-300 hover:no-underline'
-					>
-						Continue Shopping
-						<MoveRight size={16} />
-					</Link>
-				</div>
+					Continue Shopping
+					<MoveRight size={13} />
+				</Link>
 			</div>
 		</motion.div>
 	);
