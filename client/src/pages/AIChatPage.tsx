@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Bot, Info, Loader, Send, Trash2, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-const RAG_URL = 'http://127.0.0.1:8000/api/v1/nlp/index/answer/1';
+const RAG_URL = 'http://localhost:8000/api/v1/nlp/index/answer/1';
 
 interface Message {
 	id: string;
@@ -17,7 +17,7 @@ const AIChatPage = () => {
 			id: '0',
 			role: 'assistant',
 			content:
-				"Hello! I'm your AI shopping assistant powered by RAG. Ask me anything about our products, categories, or get personalized recommendations!",
+				"Hello! I'm your AI shopping assistant. Ask me anything about our products, categories, or get personalized recommendations!",
 			timestamp: new Date(),
 		},
 	]);
@@ -67,7 +67,7 @@ const AIChatPage = () => {
 				},
 				body: JSON.stringify({
 					text: trimmed,
-					limit: 5,
+					limit: 15,
 				}),
 			});
 
@@ -108,7 +108,7 @@ const AIChatPage = () => {
 				id: '0',
 				role: 'assistant',
 				content:
-					"Hello! I'm your AI shopping assistant powered by RAG. Ask me anything about our products, categories, or get personalized recommendations!",
+					"Hello! I'm your AI shopping assistant. Ask me anything about our products, categories, or get personalized recommendations!",
 				timestamp: new Date(),
 			},
 		]);
@@ -135,7 +135,7 @@ const AIChatPage = () => {
 							<h1 className='text-2xl font-bold text-emerald-400'>AI Shopping Assistant</h1>
 							<p className='text-gray-400 text-sm flex items-center gap-1'>
 								<span className='w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse' />
-								Powered by RAG · HuggingFace Space
+								Powered by RAG·
 							</p>
 						</div>
 					</div>

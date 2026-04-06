@@ -2,18 +2,9 @@ import { useEffect, useState } from 'react';
 import { ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCartStore } from '../stores/useCartStore';
 
-interface Product {
-	_id: string;
-	name: string;
-	price: number;
-	image: string;
-}
+interface Product { _id: string; name: string; price: number; image: string; }
 
-interface FeaturedProductsProps {
-	featuredProducts: Product[];
-}
-
-const FeaturedProducts = ({ featuredProducts }: FeaturedProductsProps) => {
+const FeaturedProducts = ({ featuredProducts }: { featuredProducts: Product[] }) => {
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [itemsPerPage, setItemsPerPage] = useState(4);
 	const { addToCart } = useCartStore();
@@ -25,77 +16,101 @@ const FeaturedProducts = ({ featuredProducts }: FeaturedProductsProps) => {
 			else if (window.innerWidth < 1280) setItemsPerPage(3);
 			else setItemsPerPage(4);
 		};
-
 		handleResize();
 		window.addEventListener('resize', handleResize);
 		return () => window.removeEventListener('resize', handleResize);
 	}, []);
 
-	const nextSlide = () => setCurrentIndex((prev) => prev + itemsPerPage);
-	const prevSlide = () => setCurrentIndex((prev) => prev - itemsPerPage);
-
+	const nextSlide = () => setCurrentIndex(prev => prev + itemsPerPage);
+	const prevSlide = () => setCurrentIndex(prev => prev - itemsPerPage);
 	const isStartDisabled = currentIndex === 0;
 	const isEndDisabled = currentIndex >= featuredProducts.length - itemsPerPage;
 
+	const navBtn = (onClick: () => void, disabled: boolean, children: React.ReactNode, side: 'left' | 'right') => (
+		<button
+			onClick={onClick}
+			disabled={disabled}
+			style={{
+				position: 'absolute', top: '50%', [side]: -20,
+				transform: 'translateY(-50%)',
+				width: 40, height: 40,
+				background: disabled ? '#1a1a1a' : '#000',
+				border: `1px solid ${disabled ? '#1e1e1e' : 'var(--gold)'}`,
+				color: disabled ? '#333' : 'var(--gold)',
+				display: 'flex', alignItems: 'center', justifyContent: 'center',
+				cursor: disabled ? 'not-allowed' : 'pointer',
+				transition: 'all 0.2s',
+				zIndex: 10,
+			}}
+		>
+			{children}
+		</button>
+	);
+
 	return (
-		<div className='py-12'>
-			<div className='container mx-auto px-4'>
-				<h2 className='text-center text-5xl sm:text-6xl font-bold text-emerald-400 mb-4'>Featured</h2>
-				<div className='relative'>
-					<div className='overflow-hidden'>
-						<div
-							className='flex transition-transform duration-300 ease-in-out'
-							style={{ transform: `translateX(-${currentIndex * (100 / itemsPerPage)}%)` }}
-						>
-							{featuredProducts.map((product) => (
-								<div key={product._id} className='w-full sm:w-1/2 lg:w-1/3 xl:w-1/4 flex-shrink-0 px-2'>
-									<div className='bg-white bg-opacity-10 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden h-full transition-all duration-300 hover:shadow-xl border border-emerald-500/30'>
-										<div className='overflow-hidden'>
-											<img
-												src={product.image}
-												alt={product.name}
-												className='w-full h-48 object-cover transition-transform duration-300 ease-in-out hover:scale-110'
-											/>
-										</div>
-										<div className='p-4'>
-											<h3 className='text-lg font-semibold mb-2 text-white'>{product.name}</h3>
-											<p className='text-emerald-300 font-medium mb-4'>
+		<div style={{ padding: '64px 0' }}>
+			{/* Section header */}
+			<div style={{ textAlign: 'center', marginBottom: 48 }}>
+				<p style={{ color: 'var(--gold)', fontSize: '0.65rem', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: 12 }}>
+					Curated Selection
+				</p>
+				<h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '3.5rem', fontWeight: 400, color: '#f5f5f0', margin: 0 }}>
+					Featured Pieces
+				</h2>
+				<div style={{ width: 60, height: 1, background: 'linear-gradient(90deg, transparent, var(--gold), transparent)', margin: '20px auto 0' }} />
+			</div>
+
+			<div style={{ position: 'relative' }}>
+				<div style={{ overflow: 'hidden' }}>
+					<div style={{ display: 'flex', transition: 'transform 0.4s ease', transform: `translateX(-${currentIndex * (100 / itemsPerPage)}%)` }}>
+						{featuredProducts.map((product) => (
+							<div key={product._id} style={{ width: `${100 / itemsPerPage}%`, flexShrink: 0, padding: '0 8px' }}>
+								<div style={{
+									background: '#0a0a0a', border: '1px solid #1e1e1e',
+									overflow: 'hidden', transition: 'all 0.3s',
+								}}
+									onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(201,168,76,0.35)'; }}
+									onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#1e1e1e'; }}
+								>
+									<div style={{ overflow: 'hidden', height: 200 }}>
+										<img
+											src={product.image} alt={product.name}
+											style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }}
+											onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.07)')}
+											onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+										/>
+									</div>
+									<div style={{ padding: '16px' }}>
+										<h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem', fontWeight: 600, color: '#f5f5f0', margin: '0 0 8px', lineHeight: 1.3 }}>
+											{product.name}
+										</h3>
+										<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+											<span style={{ color: 'var(--gold)', fontFamily: 'Cormorant Garamond, serif', fontSize: '1.2rem' }}>
 												${product.price.toFixed(2)}
-											</p>
+											</span>
 											<button
 												onClick={() => addToCart(product as any)}
-												className='w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-4 rounded transition-colors duration-300 flex items-center justify-center'
+												style={{
+													background: 'transparent', border: '1px solid var(--gold)',
+													color: 'var(--gold)', padding: '6px 12px', cursor: 'pointer',
+													fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
+													display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.2s',
+												}}
+												onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--gold)'; (e.currentTarget as HTMLElement).style.color = '#000'; }}
+												onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--gold)'; }}
 											>
-												<ShoppingCart className='w-5 h-5 mr-2' />
-												Add to Cart
+												<ShoppingCart size={12} />
+												Add
 											</button>
 										</div>
 									</div>
 								</div>
-							))}
-						</div>
+							</div>
+						))}
 					</div>
-
-					<button
-						onClick={prevSlide}
-						disabled={isStartDisabled}
-						className={`absolute top-1/2 -left-4 transform -translate-y-1/2 p-2 rounded-full transition-colors duration-300 ${
-							isStartDisabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500'
-						}`}
-					>
-						<ChevronLeft className='w-6 h-6' />
-					</button>
-
-					<button
-						onClick={nextSlide}
-						disabled={isEndDisabled}
-						className={`absolute top-1/2 -right-4 transform -translate-y-1/2 p-2 rounded-full transition-colors duration-300 ${
-							isEndDisabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500'
-						}`}
-					>
-						<ChevronRight className='w-6 h-6' />
-					</button>
 				</div>
+				{navBtn(prevSlide, isStartDisabled, <ChevronLeft size={18} />, 'left')}
+				{navBtn(nextSlide, isEndDisabled, <ChevronRight size={18} />, 'right')}
 			</div>
 		</div>
 	);

@@ -1,5 +1,5 @@
 import { ShoppingCart, UserPlus, LogIn, LogOut, Lock, Bot } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useUserStore } from '../stores/useUserStore';
 import { useCartStore } from '../stores/useCartStore';
 
@@ -7,84 +7,156 @@ const Navbar = () => {
 	const { user, logout } = useUserStore();
 	const isAdmin = user?.role === 'admin';
 	const { cart } = useCartStore();
+	const location = useLocation();
+
+	const navLink = (to: string, label: string) => {
+		const active = location.pathname === to;
+		return (
+			<Link
+				to={to}
+				style={{
+					color: active ? 'var(--gold)' : 'var(--white-dim)',
+					fontSize: '0.75rem',
+					letterSpacing: '0.1em',
+					textTransform: 'uppercase',
+					fontFamily: 'DM Sans, sans-serif',
+					fontWeight: 500,
+					transition: 'color 0.2s',
+					textDecoration: 'none',
+				}}
+				onMouseEnter={e => (e.currentTarget.style.color = 'var(--gold)')}
+				onMouseLeave={e => (e.currentTarget.style.color = active ? 'var(--gold)' : 'var(--white-dim)')}
+			>
+				{label}
+			</Link>
+		);
+	};
 
 	return (
-		<header className='fixed top-0 left-0 w-full bg-gray-900 bg-opacity-90 backdrop-blur-md shadow-lg z-40 transition-all duration-300 border-b border-emerald-800'>
-			<div className='container mx-auto px-4 py-3'>
-				<div className='flex flex-wrap justify-between items-center'>
-					<Link to='/' className='text-2xl font-bold text-emerald-400 items-center space-x-2 flex'>
-						E-Commerce
+		<header style={{
+			position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 40,
+			background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(16px)',
+			borderBottom: '1px solid #1e1e1e',
+		}}>
+			<div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+
+				{/* Logo */}
+				<Link to='/' style={{ textDecoration: 'none' }}>
+					<span style={{
+						fontFamily: 'Cormorant Garamond, serif',
+						fontSize: '1.5rem',
+						fontWeight: 600,
+						letterSpacing: '0.05em',
+						background: 'linear-gradient(90deg, #c9a84c, #e8c97a, #c9a84c)',
+						backgroundSize: '200% auto',
+						WebkitBackgroundClip: 'text',
+						WebkitTextFillColor: 'transparent',
+						backgroundClip: 'text',
+					}}>
+						LUXORA
+					</span>
+				</Link>
+
+				{/* Nav links */}
+				<nav style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
+					{navLink('/', 'Home')}
+
+					<Link
+						to='/ai-chat'
+						style={{
+							display: 'flex', alignItems: 'center', gap: 6,
+							color: location.pathname === '/ai-chat' ? 'var(--gold)' : 'var(--white-dim)',
+							fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+							fontWeight: 500, transition: 'color 0.2s', textDecoration: 'none',
+						}}
+						onMouseEnter={e => (e.currentTarget.style.color = 'var(--gold)')}
+						onMouseLeave={e => (e.currentTarget.style.color = location.pathname === '/ai-chat' ? 'var(--gold)' : 'var(--white-dim)')}
+					>
+						<Bot size={14} />
+						<span>AI</span>
 					</Link>
 
-					<nav className='flex flex-wrap items-center gap-4'>
-						<Link
-							to='/'
-							className='text-gray-300 hover:text-emerald-400 transition duration-300 ease-in-out'
-						>
-							Home
+					{user && (
+						<Link to='/cart' style={{ position: 'relative', color: 'var(--white-dim)', transition: 'color 0.2s', textDecoration: 'none' }}
+							onMouseEnter={e => (e.currentTarget.style.color = 'var(--gold)')}
+							onMouseLeave={e => (e.currentTarget.style.color = 'var(--white-dim)')}>
+							<ShoppingCart size={18} />
+							{cart.length > 0 && (
+								<span style={{
+									position: 'absolute', top: -8, right: -8,
+									background: 'var(--gold)', color: '#000',
+									borderRadius: '50%', width: 16, height: 16,
+									fontSize: '0.6rem', fontWeight: 700,
+									display: 'flex', alignItems: 'center', justifyContent: 'center',
+								}}>
+									{cart.length}
+								</span>
+							)}
 						</Link>
+					)}
 
-						<Link
-							to='/ai-chat'
-							className='flex items-center gap-1.5 text-gray-300 hover:text-emerald-400 transition duration-300 ease-in-out'
+					{isAdmin && (
+						<Link to='/secret-dashboard' style={{
+							display: 'flex', alignItems: 'center', gap: 6,
+							padding: '6px 14px', border: '1px solid var(--gold)',
+							color: 'var(--gold)', borderRadius: 2,
+							fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+							fontWeight: 600, transition: 'all 0.2s', textDecoration: 'none',
+						}}
+							onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--gold)'; (e.currentTarget as HTMLElement).style.color = '#000'; }}
+							onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--gold)'; }}
 						>
-							<Bot size={18} className='inline-block' />
-							<span className='hidden sm:inline'>AI Assistant</span>
+							<Lock size={12} />
+							Admin
 						</Link>
+					)}
 
-						{user && (
-							<Link
-								to='/cart'
-								className='relative group text-gray-300 hover:text-emerald-400 transition duration-300 ease-in-out'
+					{user ? (
+						<button onClick={logout} style={{
+							display: 'flex', alignItems: 'center', gap: 6,
+							background: 'transparent', border: '1px solid #1e1e1e',
+							color: 'var(--white-dim)', padding: '6px 14px', borderRadius: 2,
+							fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+							fontWeight: 500, cursor: 'pointer', transition: 'all 0.2s',
+						}}
+							onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#c00'; (e.currentTarget as HTMLElement).style.color = '#ff4444'; }}
+							onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#1e1e1e'; (e.currentTarget as HTMLElement).style.color = 'var(--white-dim)'; }}
+						>
+							<LogOut size={13} />
+							<span className='hidden sm:inline'>Out</span>
+						</button>
+					) : (
+						<div style={{ display: 'flex', gap: 10 }}>
+							<Link to='/signup' style={{
+								padding: '7px 16px', background: 'var(--gold)', color: '#000',
+								borderRadius: 2, fontSize: '0.7rem', letterSpacing: '0.1em',
+								textTransform: 'uppercase', fontWeight: 700,
+								textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6,
+								transition: 'all 0.2s',
+							}}
+								onMouseEnter={e => (e.currentTarget.style.background = '#e8c97a')}
+								onMouseLeave={e => (e.currentTarget.style.background = 'var(--gold)')}
 							>
-								<ShoppingCart className='inline-block mr-1 group-hover:text-emerald-400' size={20} />
-								<span className='hidden sm:inline'>Cart</span>
-								{cart.length > 0 && (
-									<span className='absolute -top-2 -left-2 bg-emerald-500 text-white rounded-full px-2 py-0.5 text-xs group-hover:bg-emerald-400 transition duration-300 ease-in-out'>
-										{cart.length}
-									</span>
-								)}
+								<UserPlus size={13} />
+								Join
 							</Link>
-						)}
-
-						{isAdmin && (
-							<Link
-								className='bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1 rounded-md font-medium transition duration-300 ease-in-out flex items-center'
-								to='/secret-dashboard'
+							<Link to='/login' style={{
+								padding: '7px 16px', background: 'transparent',
+								border: '1px solid #1e1e1e', color: 'var(--white-dim)',
+								borderRadius: 2, fontSize: '0.7rem', letterSpacing: '0.1em',
+								textTransform: 'uppercase', fontWeight: 500,
+								textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6,
+								transition: 'all 0.2s',
+							}}
+								onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--gold)'; (e.currentTarget as HTMLElement).style.color = 'var(--gold)'; }}
+								onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#1e1e1e'; (e.currentTarget as HTMLElement).style.color = 'var(--white-dim)'; }}
 							>
-								<Lock className='inline-block mr-1' size={18} />
-								<span className='hidden sm:inline'>Dashboard</span>
+								<LogIn size={13} />
+								Login
 							</Link>
-						)}
-
-						{user ? (
-							<button
-								className='bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-md flex items-center transition duration-300 ease-in-out'
-								onClick={logout}
-							>
-								<LogOut size={18} />
-								<span className='hidden sm:inline ml-2'>Log Out</span>
-							</button>
-						) : (
-							<>
-								<Link
-									to='/signup'
-									className='bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-md flex items-center transition duration-300 ease-in-out'
-								>
-									<UserPlus className='mr-2' size={18} />
-									Sign Up
-								</Link>
-								<Link
-									to='/login'
-									className='bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-md flex items-center transition duration-300 ease-in-out'
-								>
-									<LogIn className='mr-2' size={18} />
-									Login
-								</Link>
-							</>
-						)}
-					</nav>
-				</div>
+						</div>
+					)}
+				</nav>
 			</div>
 		</header>
 	);
