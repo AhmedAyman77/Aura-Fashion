@@ -201,6 +201,38 @@ export const swaggerSpec = swaggerJsdoc({
                     },
                 },
             },
+            '/api/auth/google': {
+                get: {
+                    tags: ['Auth'],
+                    summary: 'Start Google OAuth flow',
+                    description: 'Redirects the user to Google for authentication',
+                    responses: { 302: { description: 'Redirect to Google' } },
+                },
+            },
+            '/api/auth/google/callback': {
+                get: {
+                    tags: ['Auth'],
+                    summary: 'Google OAuth callback',
+                    description: 'Callback endpoint used by Google after authentication',
+                    responses: { 302: { description: 'Redirect after OAuth' } },
+                },
+            },
+            '/api/auth/github': {
+                get: {
+                    tags: ['Auth'],
+                    summary: 'Start GitHub OAuth flow',
+                    description: 'Redirects the user to GitHub for authentication',
+                    responses: { 302: { description: 'Redirect to GitHub' } },
+                },
+            },
+            '/api/auth/github/callback': {
+                get: {
+                    tags: ['Auth'],
+                    summary: 'GitHub OAuth callback',
+                    description: 'Callback endpoint used by GitHub after authentication',
+                    responses: { 302: { description: 'Redirect after OAuth' } },
+                },
+            },
             '/api/products': {
                 get: {
                     tags: ['Products'],
@@ -386,26 +418,7 @@ export const swaggerSpec = swaggerJsdoc({
                     responses: { 200: { description: 'Order created' } },
                 },
             },
-            '/api/analytics': {
-                get: {
-                    tags: ['Analytics'],
-                    summary: 'Get analytics overview',
-                    security: [{ cookieAuth: [] }],
-                    responses: { 200: { description: 'Analytics overview' }, 403: { description: 'Forbidden' } },
-                },
-            },
-            '/api/analytics/daily': {
-                get: {
-                    tags: ['Analytics'],
-                    summary: 'Get daily sales data',
-                    security: [{ cookieAuth: [] }],
-                    parameters: [
-                        { in: 'query', name: 'startDate', required: true, schema: { type: 'string', format: 'date-time' } },
-                        { in: 'query', name: 'endDate', required: true, schema: { type: 'string', format: 'date-time' } },
-                    ],
-                    responses: { 200: { description: 'Daily sales data' }, 403: { description: 'Forbidden' } },
-                },
-            },
+            
         },
     },
     apis: ['src/routes/*.ts', 'src/controllers/*.ts'],
