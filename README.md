@@ -603,7 +603,7 @@ What exists here:
 
 So if you want the Retrieval-Augmented Generation code and documentation, use this repository:
 
-`https://github.com/AhmedAyman77/RAG-Assistant`
+[https://github.com/AhmedAyman77/RAG-Assistant](https://github.com/AhmedAyman77/RAG-Assistant)
 
 ## Notes
 - The frontend Axios client uses `http://localhost:5000/api` during development.
