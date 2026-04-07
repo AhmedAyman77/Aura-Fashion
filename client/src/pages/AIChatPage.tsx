@@ -67,7 +67,7 @@ const AIChatPage = () => {
 			const res = await fetch(RAG_URL, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ text: trimmed, limit: 25 }),
+				body: JSON.stringify({ text: trimmed, limit: 40 }),
 			});
 			if (!res.ok) throw new Error(`${res.status}`);
 			const data = await res.json();
